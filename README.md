@@ -17,8 +17,9 @@
    3. `prod_config.tf` file is our variable file, which list all our config variables and its default.
    4. Updated Dockerfile for our image to accept new Environment variable which is used to pass in AWS credentials through commandline.
    5. Rebuild our image ``` docker build -t gssumesh/avidya .```
-   6. Execute terraform plan to view changes 
-      ``` docker run --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya plan /infrastructure_provisioning  ```
+   6. Execute terraform plan to view changes:
+      ``` docker run --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya plan /infrastructure_provisioning ```
+
    7. Above command attaches infrastructure_provisioning folder as volume to docker container. Pass AWS creds and executes terraform plan. This will output possible changes because of this execution. Result will look like below.
 
 ```
@@ -63,10 +64,12 @@ Plan: 1 to add, 0 to change, 0 to destroy.
      ``` docker run --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya apply -state=/infrastructure_provisioning/aws_provisioning.tfstate /infrastructure_provisioning ```
   5. It will create a state file `infrastructure_provisioning/aws_provisioning.tfstate` , which has all information needed by terraform to determine state of our infrastructure.
   6. Execute plan command to see state file in action :
-     ``` docker run --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya plan -state=/infrastructure_provisioning/aws_provisioning.tfstate /infrastructure_provisioning  ```
+    
+      ``` docker run --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya plan -state=/infrastructure_provisioning/aws_provisioning.tfstate /infrastructure_provisioning  ```
+
  will output as this :
 
-     ```
+ ```
  Refreshing Terraform state in-memory prior to plan...
 The refreshed state will be used to calculate this plan, but will not be
 persisted to local or remote state storage.
@@ -74,10 +77,17 @@ persisted to local or remote state storage.
 aws_instance.avidya_microservice_prod_ec2: Refreshing state... (ID: i-XXXXXXX)
 No changes. Infrastructure is up-to-date. 
 
- ```
+```
+
+
   7.  Try "show" command to view current state as follows :
+
       ``` docker run --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya show /infrastructure_provisioning/aws_provisioning.tfstate  ```
+
+
   8.  Let us destroy the infrastructure :
+
      ``` docker run -it --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya destroy -state=/infrastructure_provisioning/aws_provisioning.tfstate /infrastructure_provisioning  ```
+
   9. Next chapter, we should try remote state in order to version control and store state in remote location.
 
