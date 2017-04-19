@@ -91,3 +91,39 @@ No changes. Infrastructure is up-to-date.
 
   9. Next chapter, we should try remote state in order to version control and store state in remote location.
 
+
+## Chapter 4:
+  1. Now let us set up remote state file. State file is key for terraform. It lets terraform know about current infrastructure. So we have to update couple of things.
+  2. We are going to use s3 bucket as backend for terraform and not going to use lock for now.
+  3. To configure , first we need to create an s3 bucket. I created mine as `prod-avidya-terraform-state` and file name as `aws_provisioning.tfstate`. Add following config(update with your bucket name and key name) in your .tf file . 
+
+```
+terraform {
+  backend "s3" {
+    bucket = "prod-avidya-terraform-state"
+    key    = "aws_provisioning.tfstate"
+    region = "us-east-1"
+  }
+}
+
+```
+
+  4. I am not sure why, even though you set the details in config, terraform needs you to execute `terraform init` command to configure your new backend.
+  5. Since we are using docker container, every time we run container we have to perform ` terraform init ` because we are not persisting anything.  Not sure if there is a work around for same.
+  6. Now to accomodate all this changes, I have edited Dockerfile to have new entrypoint, which is our script `docker-entrypoint.sh`. Everytime Docker container executes, this script will first perform terraform init on specified directory of .tf files and then executed the command. Executing terraform init multiple time doesn't have any impact. Have added another variable to set directory for terraform files. By default, it refers to location `/infrastructure_provisioning/` inside container. 
+  7. Execute following command to see plan is working after change in backend.
+
+```
+     docker run -it --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya plan
+
+```
+  8. Execute following to see backend in action.
+
+```
+     docker run -it --rm -v /PATH_TO_YOUR_REPOSITORY/avidya/infrastructure_provisioning:/infrastructure_provisioning -e TF_VAR_access_key=YOUR_AWS_ACCESS_KEY -e TF_VAR_secret_key=YOUR_AWS_SECRET_KEY gssumesh/avidya apply
+
+```
+     Above step will create resources and then upload new state to s3 bucket as mentioned in our configuration.
+
+
+
